@@ -9,9 +9,6 @@ namespace Magento\OfflineShipping\Model\ResourceModel\Carrier\Tablerate\CSV;
 use Magento\Framework\Phrase;
 use Magento\OfflineShipping\Model\ResourceModel\Carrier\Tablerate\LocationDirectory;
 
-/**
- * Row parser.
- */
 class RowParser
 {
     /**
@@ -29,8 +26,6 @@ class RowParser
     }
 
     /**
-     * Retrieve columns.
-     *
      * @return array
      */
     public function getColumns()
@@ -47,8 +42,6 @@ class RowParser
     }
 
     /**
-     * Parse provided row data.
-     *
      * @param array $rowData
      * @param int $rowNumber
      * @param int $websiteId
@@ -78,30 +71,23 @@ class RowParser
         }
 
         $countryId = $this->getCountryId($rowData, $rowNumber, $columnResolver);
-        $regionIds = $this->getRegionIds($rowData, $rowNumber, $columnResolver, $countryId);
+        $regionId = $this->getRegionId($rowData, $rowNumber, $columnResolver, $countryId);
         $zipCode = $this->getZipCode($rowData, $columnResolver);
         $conditionValue = $this->getConditionValue($rowData, $rowNumber, $conditionFullName, $columnResolver);
         $price = $this->getPrice($rowData, $rowNumber, $columnResolver);
 
-        $rates = [];
-        foreach ($regionIds as $regionId) {
-            $rates[] = [
-                'website_id' => $websiteId,
-                'dest_country_id' => $countryId,
-                'dest_region_id' => $regionId,
-                'dest_zip' => $zipCode,
-                'condition_name' => $conditionShortName,
-                'condition_value' => $conditionValue,
-                'price' => $price,
-            ];
-        }
-
-        return $rates;
+        return [
+            'website_id' => $websiteId,
+            'dest_country_id' => $countryId,
+            'dest_region_id' => $regionId,
+            'dest_zip' => $zipCode,
+            'condition_name' => $conditionShortName,
+            'condition_value' => $conditionValue,
+            'price' => $price,
+        ];
     }
 
     /**
-     * Get country id from provided row data.
-     *
      * @param array $rowData
      * @param int $rowNumber
      * @param ColumnResolver $columnResolver
@@ -130,23 +116,21 @@ class RowParser
     }
 
     /**
-     * Retrieve region id from provided row data.
-     *
      * @param array $rowData
      * @param int $rowNumber
      * @param ColumnResolver $columnResolver
      * @param int $countryId
-     * @return array
+     * @return int|string
      * @throws ColumnNotFoundException
      * @throws RowException
      */
-    private function getRegionIds(array $rowData, $rowNumber, ColumnResolver $columnResolver, $countryId)
+    private function getRegionId(array $rowData, $rowNumber, ColumnResolver $columnResolver, $countryId)
     {
         $regionCode = $columnResolver->getColumnValue(ColumnResolver::COLUMN_REGION, $rowData);
         if ($countryId !== '0' && $this->locationDirectory->hasRegionId($countryId, $regionCode)) {
-            $regionIds = $this->locationDirectory->getRegionIds($countryId, $regionCode);
+            $regionId = $this->locationDirectory->getRegionId($countryId, $regionCode);
         } elseif ($regionCode === '*' || $regionCode === '') {
-            $regionIds = [0];
+            $regionId = 0;
         } else {
             throw new RowException(
                 __(
@@ -157,12 +141,10 @@ class RowParser
                 )
             );
         }
-        return $regionIds;
+        return $regionId;
     }
 
     /**
-     * Retrieve zip code from provided row data.
-     *
      * @param array $rowData
      * @param ColumnResolver $columnResolver
      * @return float|int|null|string
@@ -178,8 +160,6 @@ class RowParser
     }
 
     /**
-     * Get condition value form provided row data.
-     *
      * @param array $rowData
      * @param int $rowNumber
      * @param string $conditionFullName
@@ -207,8 +187,6 @@ class RowParser
     }
 
     /**
-     * Retrieve price from provided row data.
-     *
      * @param array $rowData
      * @param int $rowNumber
      * @param ColumnResolver $columnResolver
@@ -234,7 +212,6 @@ class RowParser
 
     /**
      * Parse and validate positive decimal value
-     *
      * Return false if value is not decimal or is not positive
      *
      * @param string $value

@@ -6,20 +6,12 @@
 
 namespace Magento\OfflineShipping\Model\ResourceModel\Carrier\Tablerate;
 
-/**
- * Location directory.
- */
 class LocationDirectory
 {
     /**
      * @var array
      */
     protected $regions;
-
-    /**
-     * @var array
-     */
-    private $regionsByCode;
 
     /**
      * @var array
@@ -55,8 +47,6 @@ class LocationDirectory
     }
 
     /**
-     * Retrieve country id.
-     *
      * @param string $countryCode
      * @return null|string
      */
@@ -98,8 +88,6 @@ class LocationDirectory
     }
 
     /**
-     * Check if there is country id with provided country code.
-     *
      * @param string $countryCode
      * @return bool
      */
@@ -110,8 +98,6 @@ class LocationDirectory
     }
 
     /**
-     * Check if there is region id with provided region code and country id.
-     *
      * @param string $countryId
      * @param string $regionCode
      * @return bool
@@ -129,50 +115,29 @@ class LocationDirectory
      */
     protected function loadRegions()
     {
-        if ($this->regions !== null && $this->regionsByCode !== null) {
+        if ($this->regions !== null) {
             return $this;
         }
 
         $this->regions = [];
-        $this->regionsByCode = [];
 
         /** @var $collection \Magento\Directory\Model\ResourceModel\Region\Collection */
         $collection = $this->_regionCollectionFactory->create();
         foreach ($collection->getData() as $row) {
             $this->regions[$row['country_id']][$row['code']] = (int)$row['region_id'];
-            if (empty($this->regionsByCode[$row['country_id']][$row['code']])) {
-                $this->regionsByCode[$row['country_id']][$row['code']] = [];
-            }
-            $this->regionsByCode[$row['country_id']][$row['code']][] = (int)$row['region_id'];
         }
 
         return $this;
     }
 
     /**
-     * Retrieve region id.
-     *
      * @param int $countryId
      * @param string $regionCode
      * @return string
-     * @deprecated 100.3.1
      */
     public function getRegionId($countryId, $regionCode)
     {
         $this->loadRegions();
         return $this->regions[$countryId][$regionCode];
-    }
-
-    /**
-     * Return region ids for country and region
-     *
-     * @param int $countryId
-     * @param string $regionCode
-     * @return array
-     */
-    public function getRegionIds($countryId, $regionCode)
-    {
-        $this->loadRegions();
-        return $this->regionsByCode[$countryId][$regionCode];
     }
 }

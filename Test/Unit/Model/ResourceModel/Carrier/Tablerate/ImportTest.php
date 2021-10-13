@@ -3,66 +3,63 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
 
 namespace Magento\OfflineShipping\Test\Unit\Model\ResourceModel\Carrier\Tablerate;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Filesystem;
 use Magento\Framework\Filesystem\File\ReadInterface;
-use Magento\OfflineShipping\Model\ResourceModel\Carrier\Tablerate\CSV\ColumnResolver;
 use Magento\OfflineShipping\Model\ResourceModel\Carrier\Tablerate\CSV\ColumnResolverFactory;
+use Magento\OfflineShipping\Model\ResourceModel\Carrier\Tablerate\CSV\ColumnResolver;
 use Magento\OfflineShipping\Model\ResourceModel\Carrier\Tablerate\CSV\RowParser;
 use Magento\OfflineShipping\Model\ResourceModel\Carrier\Tablerate\DataHashGenerator;
 use Magento\OfflineShipping\Model\ResourceModel\Carrier\Tablerate\Import;
 use Magento\Store\Model\StoreManagerInterface;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Unit test for Magento\OfflineShipping\Model\ResourceModel\Carrier\Tablerate\Import
  */
-class ImportTest extends TestCase
+class ImportTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @var Import
+     * @var \Magento\OfflineShipping\Model\ResourceModel\Carrier\Tablerate\Import
      */
     private $import;
 
     /**
-     * @var StoreManagerInterface|MockObject
+     * @var StoreManagerInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     private $storeManagerMock;
 
     /**
-     * @var Filesystem|MockObject
+     * @var Filesystem|\PHPUnit_Framework_MockObject_MockObject
      */
     private $filesystemMock;
 
     /**
-     * @var ScopeConfigInterface|MockObject
+     * @var ScopeConfigInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     private $scopeConfigMock;
 
     /**
-     * @var RowParser|MockObject
+     * @var RowParser|\PHPUnit_Framework_MockObject_MockObject
      */
     private $rowParserMock;
 
     /**
-     * @var MockObject
+     * @var \PHPUnit_Framework_MockObject_MockObject
      */
     private $columnResolverFactoryMock;
 
     /**
-     * @var DataHashGenerator|MockObject
+     * @var DataHashGenerator|\PHPUnit_Framework_MockObject_MockObject
      */
     private $dataHashGeneratorMock;
 
     /**
      * {@inheritDoc}
      */
-    protected function setUp(): void
+    protected function setUp()
     {
         $this->storeManagerMock = $this->getMockBuilder(StoreManagerInterface::class)
             ->getMockForAbstractClass();
@@ -80,6 +77,9 @@ class ImportTest extends TestCase
             ->getMock();
         $this->dataHashGeneratorMock = $this->getMockBuilder(DataHashGenerator::class)
             ->getMock();
+        $this->rowParserMock->expects($this->any())
+            ->method('parse')
+            ->willReturnArgument(0);
         $this->dataHashGeneratorMock->expects($this->any())
             ->method('getHash')
             ->willReturnCallback(
@@ -124,15 +124,6 @@ class ImportTest extends TestCase
             ['a4', 'b4', 'c4', 'd4', 'e4'],
             ['a5', 'b5', 'c5', 'd5', 'e5'],
         ];
-        $this->rowParserMock->expects($this->any())
-            ->method('parse')
-            ->willReturn(
-                [['a1', 'b1', 'c1', 'd1', 'e1']],
-                [['a2', 'b2', 'c2', 'd2', 'e2']],
-                [['a3', 'b3', 'c3', 'd3', 'e3']],
-                [['a4', 'b4', 'c4', 'd4', 'e4']],
-                [['a5', 'b5', 'c5', 'd5', 'e5']]
-            );
         $file = $this->createFileMock($lines);
         $expectedResult = [
             [
@@ -148,9 +139,7 @@ class ImportTest extends TestCase
             ]
         ];
 
-        $columnResolver = $this->getMockBuilder(ColumnResolver::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $columnResolver = $this->getMockBuilder(ColumnResolver::class)->disableOriginalConstructor()->getMock();
         $this->columnResolverFactoryMock
             ->expects($this->once())
             ->method('create')
@@ -178,13 +167,6 @@ class ImportTest extends TestCase
             [],
             ['a2', 'b2', 'c2', 'd2', 'e2'],
         ];
-        $this->rowParserMock->expects($this->any())
-            ->method('parse')
-            ->willReturn(
-                [['a1', 'b1', 'c1', 'd1', 'e1']],
-                [['a1', 'b1', 'c1', 'd1', 'e1']],
-                [['a2', 'b2', 'c2', 'd2', 'e2']]
-            );
         $file = $this->createFileMock($lines);
         $expectedResult = [
             [
@@ -193,9 +175,7 @@ class ImportTest extends TestCase
             ],
         ];
 
-        $columnResolver = $this->getMockBuilder(ColumnResolver::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $columnResolver = $this->getMockBuilder(ColumnResolver::class)->disableOriginalConstructor()->getMock();
         $this->columnResolverFactoryMock
             ->expects($this->once())
             ->method('create')
@@ -212,12 +192,12 @@ class ImportTest extends TestCase
     }
 
     /**
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     * @expectedExceptionMessage The Table Rates File Format is incorrect. Verify the format and try again.
      * @SuppressWarnings(PHPMD.UnusedLocalVariable)
      */
     public function testGetDataFromEmptyFile()
     {
-        $this->expectException('Magento\Framework\Exception\LocalizedException');
-        $this->expectExceptionMessage('The Table Rates File Format is incorrect. Verify the format and try again.');
         $lines = [];
         $file = $this->createFileMock($lines);
         foreach ($this->import->getData($file, 1, 'short_name', 'full_name', 2) as $bunch) {
@@ -227,7 +207,7 @@ class ImportTest extends TestCase
 
     /**
      * @param array $lines
-     * @return ReadInterface|MockObject
+     * @return ReadInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     private function createFileMock(array $lines)
     {

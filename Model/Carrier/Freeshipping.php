@@ -64,24 +64,6 @@ class Freeshipping extends \Magento\Shipping\Model\Carrier\AbstractCarrier imple
     }
 
     /**
-     * Check subtotal for allowed free shipping
-     *
-     * @param RateRequest $request
-     *
-     * @return bool
-     */
-    private function isFreeShippingRequired(RateRequest $request): bool
-    {
-        $minSubtotal = $request->getPackageValueWithDiscount();
-        if ($request->getBaseSubtotalWithDiscountInclTax()
-            && $this->getConfigFlag('tax_including')) {
-            $minSubtotal = $request->getBaseSubtotalWithDiscountInclTax();
-        }
-
-        return $minSubtotal >= $this->getConfigData('free_shipping_subtotal');
-    }
-
-    /**
      * FreeShipping Rates Collector
      *
      * @param RateRequest $request
@@ -98,7 +80,10 @@ class Freeshipping extends \Magento\Shipping\Model\Carrier\AbstractCarrier imple
 
         $this->_updateFreeMethodQuote($request);
 
-        if ($request->getFreeShipping() || $this->isFreeShippingRequired($request)) {
+        if ($request->getFreeShipping() || $request->getBaseSubtotalInclTax() >= $this->getConfigData(
+            'free_shipping_subtotal'
+        )
+        ) {
             /** @var \Magento\Quote\Model\Quote\Address\RateResult\Method $method */
             $method = $this->_rateMethodFactory->create();
 
@@ -112,18 +97,8 @@ class Freeshipping extends \Magento\Shipping\Model\Carrier\AbstractCarrier imple
             $method->setCost('0.00');
 
             $result->append($method);
-        } elseif ($this->getConfigData('showmethod')) {
-            $error = $this->_rateErrorFactory->create();
-            $error->setCarrier($this->_code);
-            $error->setCarrierTitle($this->getConfigData('title'));
-            $errorMsg = $this->getConfigData('specificerrmsg');
-            $error->setErrorMessage(
-                $errorMsg ? $errorMsg : __(
-                    'Sorry, but we can\'t deliver to the destination country with this shipping module.'
-                )
-            );
-            return $error;
         }
+
         return $result;
     }
 
@@ -153,12 +128,10 @@ class Freeshipping extends \Magento\Shipping\Model\Carrier\AbstractCarrier imple
     }
 
     /**
-     * Returns allowed shipping methods
-     *
      * @return array
      */
     public function getAllowedMethods()
     {
-        return [$this->_code => $this->getConfigData('name')];
+        return ['freeshipping' => $this->getConfigData('name')];
     }
 }

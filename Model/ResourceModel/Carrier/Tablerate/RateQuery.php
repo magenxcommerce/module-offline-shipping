@@ -6,9 +6,6 @@
 
 namespace Magento\OfflineShipping\Model\ResourceModel\Carrier\Tablerate;
 
-/**
- * Query builder for table rate
- */
 class RateQuery
 {
     /**
@@ -27,8 +24,6 @@ class RateQuery
     }
 
     /**
-     * Prepare select
-     *
      * @param \Magento\Framework\DB\Select $select
      * @return \Magento\Framework\DB\Select
      */
@@ -47,7 +42,6 @@ class RateQuery
             ') OR (',
             [
                 "dest_country_id = :country_id AND dest_region_id = :region_id AND dest_zip = :postcode",
-                "dest_country_id = :country_id AND dest_region_id = :region_id AND dest_zip = :postcode_prefix",
                 "dest_country_id = :country_id AND dest_region_id = :region_id AND dest_zip = ''",
 
                 // Handle asterisk in dest_zip field
@@ -57,7 +51,7 @@ class RateQuery
                 "dest_country_id = '0' AND dest_region_id = 0 AND dest_zip = '*'",
                 "dest_country_id = :country_id AND dest_region_id = 0 AND dest_zip = ''",
                 "dest_country_id = :country_id AND dest_region_id = 0 AND dest_zip = :postcode",
-                "dest_country_id = :country_id AND dest_region_id = 0 AND dest_zip = :postcode_prefix"
+                "dest_country_id = :country_id AND dest_region_id = 0 AND dest_zip = '*'"
             ]
         ) . ')';
         $select->where($orWhere);
@@ -82,8 +76,6 @@ class RateQuery
     }
 
     /**
-     * Returns query bindings
-     *
      * @return array
      */
     public function getBindings()
@@ -93,7 +85,6 @@ class RateQuery
             ':country_id' => $this->request->getDestCountryId(),
             ':region_id' => (int)$this->request->getDestRegionId(),
             ':postcode' => $this->request->getDestPostcode(),
-            ':postcode_prefix' => $this->getDestPostcodePrefix()
         ];
 
         // Render condition by condition name
@@ -115,26 +106,10 @@ class RateQuery
     }
 
     /**
-     * Returns rate request
-     *
      * @return \Magento\Quote\Model\Quote\Address\RateRequest
      */
     public function getRequest()
     {
         return $this->request;
-    }
-
-    /**
-     * Returns the entire postcode if it contains no dash or the part of it prior to the dash in the other case
-     *
-     * @return string
-     */
-    private function getDestPostcodePrefix()
-    {
-        if (!preg_match("/^(.+)-(.+)$/", $this->request->getDestPostcode(), $zipParts)) {
-            return $this->request->getDestPostcode();
-        }
-
-        return $zipParts[1];
     }
 }
