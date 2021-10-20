@@ -1,0 +1,41 @@
+{
+    "name": "magenxcommerce/module-offline-shipping",
+    "description": "N/A",
+    "config": {
+        "sort-packages": true
+    },
+    "require": {
+        "php": "~7.1.3||~7.2.0||~7.3.0",
+        "magenxcommerce/framework": "102.0.*",
+        "magenxcommerce/module-backend": "101.0.*",
+        "magenxcommerce/module-catalog": "103.0.*",
+        "magenxcommerce/module-config": "101.1.*",
+        "magenxcommerce/module-directory": "100.3.*",
+        "magenxcommerce/module-quote": "101.1.*",
+        "magenxcommerce/module-sales": "102.0.*",
+        "magenxcommerce/module-sales-rule": "101.1.*",
+        "magenxcommerce/module-shipping": "100.3.*",
+        "magenxcommerce/module-store": "101.0.*"
+    },
+    "suggest": {
+        "magenxcommerce/module-checkout": "100.3.*",
+        "magenxcommerce/module-offline-shipping-sample-data": "Sample Data version: 100.3.*"
+    },
+    "type": "magento2-module",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Magento\\OfflineShipping\\": ""
+        }
+    },
+    "version": "100.3.4-p2",
+    "replace": {
+        "magento/module-offline-shipping": "*"
+    }
+}
